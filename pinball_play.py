@@ -76,7 +76,7 @@ def play_pinball_with_model(model_path, render=True, max_frames=20000):
 
 if __name__ == "__main__":
     # Replace with your model path
-    model_path = "models/pinball_model_ep250.pth"  # or any other saved model
+    model_path = "models/pinball_model_final.pth"  # or any other saved model
     
     # Set render=True to watch the agent play
     play_pinball_with_model(model_path, render=True)
