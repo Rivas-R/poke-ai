@@ -1,2 +1,8 @@
 rom/*
 !rom/.gitkeep
+
+models/*
+!models/.gitkeep
+
+screenshots/*
+!screenshots/.gitkeep

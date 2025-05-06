@@ -1,0 +1,33 @@
+The Game Boy controls are as follows:
+
+| Keyboard key | GameBoy equivalant |
+| ---          | ---                |
+| Up           | Up                 |
+| Down         | Down               |
+| Left         | Left               |
+| Right        | Right              |
+| A            | A                  |
+| S            | B                  |
+| Return       | Start              |
+| Backspace    | Select             |
+
+The other controls for the emulator:
+
+| Keyboard key | Emulator function       |
+| ---          | ---                     |
+| F11          | Toggle fullscreen       |
+| Escape       | Quit                    |
+| D            | Debug                   |
+| Space        | Unlimited FPS           |
+| Z            | Save state              |
+| X            | Load state              |
+| I            | Toggle screen recording |
+| O            | Save screenshot         |
+| ,            | Rewind backwards        |
+| .            | Rewind forward          |
+| J            | Memory Window + 0x100   |
+| K            | Memory Window - 0x100   |
+| Shift + J    | Memory Window + 0x1000  |
+| Shift + K    | Memory Window - 0x1000  |
+
+See "pyboy --help" for how to enable rewind and other awesome features!
