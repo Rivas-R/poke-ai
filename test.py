@@ -8,6 +8,18 @@ import numpy as np
 REDUCED_WIDTH = 40
 REDUCED_HEIGHT = 36
 
+import torch
+
+# Check if CUDA (NVIDIA GPU) is available
+print("CUDA available:", torch.cuda.is_available())
+
+# List available GPUs
+print("GPUs:", torch.cuda.device_count())
+
+# Current GPU name
+if torch.cuda.is_available():
+    print("GPU:", torch.cuda.get_device_name(0))
+
 def play():
     pyboy = PyBoy('rom/Pokemon Pinball (U) [C][!].gbc')
     pyboy.set_emulation_speed(1)

@@ -16,7 +16,7 @@ def train_pinball_agent(num_episodes=500, batch_size=64, max_frames_per_episode=
     Train the pinball agent using reinforcement learning (optimized version)
     """
     # Initialize PyBoy
-    pyboy = PyBoy(ROM_PATH)
+    pyboy = PyBoy(ROM_PATH, sound_volume=0)
     pyboy.set_emulation_speed(0)  # Maximum speed
     
     # Initialize agent
