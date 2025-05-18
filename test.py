@@ -53,7 +53,7 @@ def play():
             screenshot(pyboy, f'screenshots/screenshot_{iframes//interval}.png')
             pass
 
-
+        print(pyboy.game_wrapper.pokemon_caught_in_session)
         #time.sleep(0.4)
         
         iframes += 1
