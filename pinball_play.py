@@ -74,9 +74,6 @@ def play_pinball_with_model(model_path, render=True, max_frames=20000, skip_fram
         
         # Track score
         current_score = game_wrapper.score
-        if current_score > last_score:
-            print(f"Score: {current_score}")
-            last_score = current_score
         
         frame += 1
         
