@@ -67,7 +67,10 @@ def train_pinball_agent(num_episodes=500, batch_size=64, max_frames_per_episode=
             
             # Calculate reward
             current_score = pyboy.game_wrapper.score
-            reward = current_score - last_score  # Reward based on score increase
+            reward = current_score - last_score  # Reward based on score 
+            
+            if reward == 0:
+                reward -= 1 # Small penalty for doing nothing
 
             current_balls = pyboy.game_wrapper.balls_left
             if current_balls < last_balls:
