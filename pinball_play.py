@@ -1,42 +1,61 @@
+"""
+Pokemon Pinball - Play using trained model (Optimized)
+"""
 from pyboy import PyBoy
 import torch
 import time
+import os
 
-from pinball_training import PinballDQN,  preprocess_state, apply_action, ACTIONS
+# Import from optimized modules
+from pinball_common import (
+    ROM_PATH, STATE_SIZE, ACTION_SIZE, 
+    preprocess_state, apply_action, init_game
+)
+from pinball_agent import PinballDQN
 
-def play_pinball_with_model(model_path, render=True, max_frames=20000):
+def play_pinball_with_model(model_path, render=True, max_frames=20000, skip_frames=2):
+    """
+    Play Pokemon Pinball using a trained model
+    
+    Args:
+        model_path: Path to the trained model file
+        render: If True, set normal speed for watching, otherwise use max speed
+        max_frames: Maximum number of frames to play
+        skip_frames: Number of frames to skip between actions
+    """
+    # Check if model exists
+    if not os.path.exists(model_path):
+        print(f"Model not found: {model_path}")
+        return
+    
     # Initialize PyBoy
-    pyboy = PyBoy('rom/Pokemon Pinball (U) [C][!].gbc')
+    pyboy = PyBoy(ROM_PATH)
     
     if render:
-        pyboy.set_emulation_speed(1)  # Set normal speed for watching
+        pyboy.set_emulation_speed(1)  # Normal speed for watching
     else:
         pyboy.set_emulation_speed(0)  # Max speed if not watching
     
-    game_wrapper = pyboy.game_wrapper
+    # Initialize the game
+    game_wrapper = init_game(pyboy)
     
     # Load the model
-    state_size = 5  # [ball_x, ball_y, vel_x, vel_y, lives]
-    action_size = len(ACTIONS)
-    model = PinballDQN(state_size, action_size)
+    model = PinballDQN(STATE_SIZE, ACTION_SIZE)
     model.load_state_dict(torch.load(model_path))
     model.eval()  # Set to evaluation mode
     
-    # Wait for the game to stabilize
-    for _ in range(50):
-        pyboy.tick()
+    print(f"Loaded model with state size: {STATE_SIZE}")
     
     # Main game loop
     frame = 0
     last_score = 0
-    skip_frames = 2  # Fewer skip frames for smoother gameplay
     
     print(f"Starting game with model: {model_path}")
     start_time = time.time()
     
     while not game_wrapper.game_over and frame < max_frames:
         # Get the current state
-        state = preprocess_state(game_wrapper)
+        state = preprocess_state(pyboy)
         
         # Select action with the model (no exploration)
         with torch.no_grad():
@@ -73,10 +92,5 @@ def play_pinball_with_model(model_path, render=True, max_frames=20000):
     
     # Close PyBoy
     pyboy.stop()
-
-if __name__ == "__main__":
-    # Replace with your model path
-    model_path = "models/pinball_model_final.pth"  # or any other saved model
     
-    # Set render=True to watch the agent play
-    play_pinball_with_model(model_path, render=True)
+    return game_wrapper.score

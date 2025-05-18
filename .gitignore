@@ -5,4 +5,7 @@ models/*
 !models/.gitkeep
 
 screenshots/*
-!screenshots/.gitkeep
+!screenshots/.
+
+__pycache__/
+__pycache__/pinball_training.cpython-311.pyc
