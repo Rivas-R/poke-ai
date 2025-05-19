@@ -69,8 +69,6 @@ def play_pinball_with_model(model_path, render=True, max_frames=20000, skip_fram
         # Advance game for a few frames
         for _ in range(skip_frames):
             pyboy.tick()
-            if game_wrapper.game_over:
-                break
         
         # Track score
         current_score = game_wrapper.score
