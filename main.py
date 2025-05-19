@@ -105,20 +105,16 @@ def play_menu():
         
         model_path = os.path.join(MODELS_DIR, models[model_idx])
         
-        render = input("Watch the game? (y/n, default: y): ").lower() != 'n'
         max_frames = int(input("Max frames to play (default: 20000): ") or "20000")
         skip_frames = int(input("Skip frames between actions (default: 2): ") or "2")
         
         print(f"\nPlaying with model: {models[model_idx]}")
-        print(f"Render: {'Yes' if render else 'No'}")
         print(f"Max Frames: {max_frames}")
         print(f"Skip Frames: {skip_frames}")
-        print(f"State Size: {STATE_SIZE} (includes {REDUCED_WIDTH}x{REDUCED_HEIGHT} visual input)")
         
         # Start playing
         play_pinball_with_model(
             model_path=model_path,
-            render=render,
             max_frames=max_frames,
             skip_frames=skip_frames
         )

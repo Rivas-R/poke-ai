@@ -53,7 +53,7 @@ def play_pinball_with_model(model_path, render=True, max_frames=20000, skip_fram
     print(f"Starting game with model: {model_path}")
     start_time = time.time()
     
-    while not game_wrapper.game_over and frame < max_frames:
+    while frame < max_frames:
         # Get the current state
         state = preprocess_state(pyboy)
         
