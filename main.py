@@ -65,10 +65,10 @@ def train_menu():
     print("="*50)
     
     try:
-        episodes = int(input("Number of episodes (default: 500): ") or "500")
-        batch_size = int(input("Batch size (default: 64): ") or "64")
-        max_frames = int(input("Max frames per episode (default: 10000): ") or "10000")
-        skip_frames = int(input("Skip frames (default: 6): ") or "6")
+        episodes = int(input("Number of episodes (default: 1500): ") or "1500")
+        batch_size = int(input("Batch size (default: 128): ") or "128")
+        max_frames = int(input("Max frames per episode (default: 100000): ") or "100000")
+        skip_frames = int(input("Skip frames (default: 4): ") or "4")
         
         print("\nStarting training with the following parameters:")
         print(f"Episodes: {episodes}")
@@ -77,16 +77,13 @@ def train_menu():
         print(f"Skip Frames: {skip_frames}")
         print(f"State Size: {STATE_SIZE} ({REDUCED_WIDTH}x{REDUCED_HEIGHT} visual input)")
         
-        # Confirm start training
-        confirm = input("\nStart training? (y/n): ").lower()
-        if confirm == 'y':            
-            train_pinball_agent(
-                num_episodes=episodes,
-                batch_size=batch_size,
-                max_frames_per_episode=max_frames,
-                skip_frames=skip_frames
-            )
-    
+        train_pinball_agent(
+            num_episodes=episodes,
+            batch_size=batch_size,
+            max_frames_per_episode=max_frames,
+            skip_frames=skip_frames,
+        )
+            
     except ValueError:
         print("Invalid input. Please enter numeric values.")
 
