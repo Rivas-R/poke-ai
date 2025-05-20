@@ -8,7 +8,7 @@ import os
 import numpy as np
 
 # Import from optimized modules
-from pinball_common import ROM_PATH, MODELS_DIR, STATE_SIZE, ACTION_SIZE, preprocess_state, apply_action, init_game
+from pinball_common import ROM_PATH, MODELS_DIR, STATE_SIZE, ACTION_SIZE, ADDR_BALL_X, ADDR_BALL_Y, preprocess_state, apply_action, init_game
 from pinball_agent import PinballAgent
 
 def train_pinball_agent(num_episodes=500, batch_size=64, max_frames_per_episode=10000, skip_frames=6):
@@ -40,7 +40,11 @@ def train_pinball_agent(num_episodes=500, batch_size=64, max_frames_per_episode=
         init_game(pyboy)
         
         # Get initial state
-        state = preprocess_state(pyboy)
+        last_pos_x = current_pos_x = pyboy.memory[ADDR_BALL_X]
+        last_pos_y = current_pos_y = pyboy.memory[ADDR_BALL_Y]
+
+        state = preprocess_state(pyboy, current_pos_x, current_pos_y, last_pos_x, last_pos_y)
+        
         total_reward = 0
         last_score = pyboy.game_wrapper.score
         last_balls = pyboy.game_wrapper.balls_left
@@ -64,24 +68,26 @@ def train_pinball_agent(num_episodes=500, batch_size=64, max_frames_per_episode=
                     break
             
             # Get new state
-            next_state = preprocess_state(pyboy)
+            current_pos_x = pyboy.memory[ADDR_BALL_X]
+            current_pos_y = pyboy.memory[ADDR_BALL_Y]
+            next_state = preprocess_state(pyboy, current_pos_x, current_pos_y, last_pos_x, last_pos_y)
             
             # Calculate reward
             current_score = pyboy.game_wrapper.score
             reward = current_score - last_score  # Reward based on score 
             
             if reward == 0:
-                reward -= 1 # Small penalty for doing nothing
+                reward -= 5 # Small penalty for doing nothing
 
             current_balls = pyboy.game_wrapper.balls_left
             if current_balls < last_balls:
-                reward -= 1000  # Penalty for losing a ball
+                reward -= 100000  # Penalty for losing a ball
             elif current_balls > last_balls:
-                reward += 3000  # Reward for getting a ball
+                reward += 500000  # Reward for getting a ball
             
             current_s_balls = pyboy.game_wrapper.lost_ball_during_saver
             if current_s_balls > last_s_balls:
-                reward -= 5000   # Penalty for ball lost during saver
+                reward -= 100000   # Penalty for ball lost during saver
 
             current_pokemon_caught = pyboy.game_wrapper.pokemon_caught_in_session
             if current_pokemon_caught > last_pokemon_caught:
@@ -98,6 +104,8 @@ def train_pinball_agent(num_episodes=500, batch_size=64, max_frames_per_episode=
                 loss = agent.replay(batch_size)
                 
             # Update for next iteration
+            last_pos_x = current_pos_x
+            last_pos_y = current_pos_y
             state = next_state
             total_reward += reward
             last_score = current_score

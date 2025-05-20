@@ -50,11 +50,16 @@ def play():
         
     while pyboy.tick():
         if iframes % interval == 0:
-            screenshot(pyboy, f'screenshots/screenshot_{iframes//interval}.png')
+            #screenshot(pyboy, f'screenshots/screenshot_{iframes//interval}.png')
             pass
 
-        print(pyboy.game_wrapper.pokemon_caught_in_session)
+        #print(pyboy.game_wrapper.pokemon_caught_in_session)
         #time.sleep(0.4)
+        pos_x = pyboy.memory[ADDR_BALL_X]
+        pos_y = pyboy.memory[ADDR_BALL_Y]
+
+        print(f'pos_x: {pos_x}  pos_y:{pos_y}')
+        time.sleep(.4)
         
         iframes += 1
         #print(iframes % interval)

@@ -88,7 +88,7 @@ class PinballAgent:
         self.gamma = 0.99    # Discount factor
         self.epsilon = 1.0   # Initial exploration rate
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.9999
+        self.epsilon_decay = 0.9995
         self.learning_rate = 0.001
         
         # Create neural networks: main and target

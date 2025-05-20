@@ -14,7 +14,6 @@ ACTIONS = {
     0: None,                     # No action
     1: ["left"],                 # Press left flipper
     2: ["right"],                # Press right flipper
-    3: ["shake"]                 # Shake the board
 }
 
 # Memory addresses for game state
@@ -31,18 +30,20 @@ REDUCED_HEIGHT = 36
 IMAGE_SIZE = REDUCED_WIDTH * REDUCED_HEIGHT  # 40x36 = 1440 (much smaller than 23040)
 
 # State dimensions
-BASE_STATE_SIZE = 3  # [ball_x, ball_y, lives]
+BASE_STATE_SIZE = 5  # [current_ball_x, current_ball_y, last_ball_x, current_ball_y, lives]
 STATE_SIZE = BASE_STATE_SIZE + IMAGE_SIZE  # Adding reduced-size flattened screen image
 ACTION_SIZE = len(ACTIONS)
 
-def preprocess_state(pyboy: PyBoy):
+def preprocess_state(pyboy: PyBoy, current_pos_x, current_pos_y, last_pos_x, last_pos_y):
     """
     Extract and normalize the game state features, including a downsampled screen image
     """
     # Get basic game state
     base_state = [
-        pyboy.memory[ADDR_BALL_X] / 255.0,          # Normalize X position
-        pyboy.memory[ADDR_BALL_Y] / 255.0,          # Normalize Y position
+        current_pos_x / 168.0,          # Normalize current X position
+        current_pos_y / 168.0,          # Normalize current Y position
+        last_pos_x / 168.0,             # Normalize last X position
+        last_pos_y / 168.0,             # Normalize last Y position
         pyboy.game_wrapper.balls_left / 5.0         # Normalize remaining lives
     ]
     
@@ -76,8 +77,6 @@ def apply_action(pyboy, action_idx):
             pyboy.button('Left')
         if "right" in action:
             pyboy.button('a')
-        if "shake" in action:
-            pyboy.button('b')
 
 def init_game(pyboy: PyBoy, frames_to_stabilize=50):
     """

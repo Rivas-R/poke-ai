@@ -8,7 +8,7 @@ import os
 
 # Import from optimized modules
 from pinball_common import (
-    ROM_PATH, STATE_SIZE, ACTION_SIZE, 
+    ROM_PATH, STATE_SIZE, ACTION_SIZE, ADDR_BALL_X, ADDR_BALL_Y,
     preprocess_state, apply_action, init_game
 )
 from pinball_agent import PinballDQN
@@ -52,10 +52,15 @@ def play_pinball_with_model(model_path, render=True, max_frames=20000, skip_fram
     
     print(f"Starting game with model: {model_path}")
     start_time = time.time()
+
+    last_pos_x = current_pos_x = pyboy.memory[ADDR_BALL_X]
+    last_pos_y = current_pos_y = pyboy.memory[ADDR_BALL_Y]
     
     while frame < max_frames:
         # Get the current state
-        state = preprocess_state(pyboy)
+        current_pos_x = pyboy.memory[ADDR_BALL_X]
+        current_pos_y = pyboy.memory[ADDR_BALL_Y]
+        state = preprocess_state(pyboy, current_pos_x, current_pos_y, last_pos_x, last_pos_y)
         
         # Select action with the model (no exploration)
         with torch.no_grad():
@@ -73,6 +78,9 @@ def play_pinball_with_model(model_path, render=True, max_frames=20000, skip_fram
         # Track score
         current_score = game_wrapper.score
         
+        last_pos_x = current_pos_x
+        last_pos_y = current_pos_y
+
         frame += 1
         
         # Optional: slow down for better visualization
