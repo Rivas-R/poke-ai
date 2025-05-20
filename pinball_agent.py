@@ -9,74 +9,100 @@ import numpy as np
 import random
 from collections import deque
 
-# Define a more efficient neural network architecture for the agent
 class PinballDQN(nn.Module):
-    def __init__(self, input_size, output_size):
+    def __init__(self, input_size, output_size, dropout_rate=0.2):
         super(PinballDQN, self).__init__()
         
-        # Extract dimensions
-        self.base_features = 3  # Number of numeric state features
-        self.image_features = input_size - self.base_features  # Screen pixels
+        # Fixed dimensions based on our knowledge
+        self.base_features = 5  # Number of numeric state features
         
-        # Process image features with optimized convolutional layers if input includes image
-        if self.image_features > 0:
-            # Assuming 40x36 binary image (downsampled from 160x144)
-            self.screen_width = 40
-            self.screen_height = 36
-            
-            # Smaller kernels and fewer filters for faster processing
-            self.conv1 = nn.Conv2d(1, 8, kernel_size=3, stride=2)
-            self.conv2 = nn.Conv2d(8, 16, kernel_size=3, stride=1)
-            
-            # Calculate the size after convolutions
-            def conv_output_size(size, kernel_size, stride):
-                return (size - kernel_size) // stride + 1
-            
-            conv1_width = conv_output_size(self.screen_width, 3, 2)
-            conv1_height = conv_output_size(self.screen_height, 3, 2)
-            
-            conv2_width = conv_output_size(conv1_width, 3, 1)
-            conv2_height = conv_output_size(conv1_height, 3, 1)
-            
-            self.conv_output_size = conv2_width * conv2_height * 16
-            
-            # FC layer for processing base features
-            self.base_fc = nn.Linear(self.base_features, 16)
-            
-            # Combine conv features with base features - smaller layers
-            self.fc1 = nn.Linear(self.conv_output_size + 16, 64)
-            self.fc2 = nn.Linear(64, output_size)
-        else:
-            # If no image features, use simple fully connected architecture
-            self.fc1 = nn.Linear(input_size, 32)
-            self.fc2 = nn.Linear(32, output_size)
+        # Assume 40x36 binary image (downsampled from 160x144)
+        self.screen_width = 40
+        self.screen_height = 36
+        
+        # Enhanced CNN architecture with batch normalization and efficient filters
+        self.conv1 = nn.Conv2d(1, 16, kernel_size=3, stride=1)
+        self.bn1 = nn.BatchNorm2d(16)
+        self.pool1 = nn.MaxPool2d(2, 2)  # Add pooling for better feature extraction
+        
+        self.conv2 = nn.Conv2d(16, 32, kernel_size=3, stride=1)
+        self.bn2 = nn.BatchNorm2d(32)
+        self.pool2 = nn.MaxPool2d(2, 2)
+        
+        # Add a third conv layer for better feature extraction
+        self.conv3 = nn.Conv2d(32, 32, kernel_size=3, stride=1)
+        self.bn3 = nn.BatchNorm2d(32)
+        
+        # Calculate the size after convolutions and pooling
+        # After conv1 + pool1: (40-3+1)/1 = 38, then 38/2 = 19
+        # After conv2 + pool2: (19-3+1)/1 = 17, then 17/2 = 8
+        # After conv3: (8-3+1)/1 = 6
+        conv_width = 6
+        conv_height = 5  # Similar calculation for height starting from 36
+        
+        self.conv_output_size = conv_width * conv_height * 32
+        
+        # FC layer for processing base features - increase capacity
+        self.base_fc = nn.Linear(self.base_features, 32)
+        self.base_bn = nn.BatchNorm1d(32)
+        
+        # Combine conv features with base features - larger layers for more capacity
+        self.fc1 = nn.Linear(self.conv_output_size + 32, 128)
+        self.fc1_bn = nn.BatchNorm1d(128)
+        self.dropout1 = nn.Dropout(dropout_rate)
+        
+        self.fc2 = nn.Linear(128, 64)
+        self.fc2_bn = nn.BatchNorm1d(64)
+        self.dropout2 = nn.Dropout(dropout_rate)
+        
+        # Output layer - no activation needed for Q-values
+        self.fc3 = nn.Linear(64, output_size)
+        
+        # Initialize weights with improved method
+        self._initialize_weights()
+        
+    def _initialize_weights(self):
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+            elif isinstance(m, nn.Linear):
+                nn.init.kaiming_normal_(m.weight, mode='fan_in', nonlinearity='relu')
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
         
     def forward(self, x):
-        if hasattr(self, 'conv1'):
-            # Split input into base features and image
-            base_x = x[:, :self.base_features]
-            image_x = x[:, self.base_features:]
-            
-            # Process base features
-            base_features = F.relu(self.base_fc(base_x))
-            
-            # Reshape and process image features
-            batch_size = x.size(0)
-            image_x = image_x.view(batch_size, 1, self.screen_height, self.screen_width)
-            image_features = F.relu(self.conv1(image_x))
-            image_features = F.relu(self.conv2(image_features))
-            image_features = image_features.view(batch_size, -1)
-            
-            # Combine features
-            combined = torch.cat((base_features, image_features), dim=1)
-            
-            # Simplified fully connected path
-            x = F.relu(self.fc1(combined))
-            return self.fc2(x)
-        else:
-            # Simple fully connected path
-            x = F.relu(self.fc1(x))
-            return self.fc2(x)
+        # Split input into base features and image
+        base_x = x[:, :self.base_features]
+        image_x = x[:, self.base_features:]
+        
+        # Process base features with batch normalization
+        base_features = F.relu(self.base_bn(self.base_fc(base_x)))
+        
+        # Reshape and process image features
+        batch_size = x.size(0)
+        image_x = image_x.view(batch_size, 1, self.screen_height, self.screen_width)
+        
+        # Enhanced convolutional pipeline with batch norm and pooling
+        image_features = F.relu(self.bn1(self.conv1(image_x)))
+        image_features = self.pool1(image_features)
+        
+        image_features = F.relu(self.bn2(self.conv2(image_features)))
+        image_features = self.pool2(image_features)
+        
+        image_features = F.relu(self.bn3(self.conv3(image_features)))
+        image_features = image_features.view(batch_size, -1)
+        
+        # Combine features
+        combined = torch.cat((base_features, image_features), dim=1)
+        
+        # Enhanced fully connected path with batch norm and dropout
+        x = F.relu(self.fc1_bn(self.fc1(combined)))
+        x = self.dropout1(x)
+        
+        x = F.relu(self.fc2_bn(self.fc2(x)))
+        x = self.dropout2(x)
+        
+        return self.fc3(x)
 
 # Reinforcement learning agent class
 class PinballAgent:
