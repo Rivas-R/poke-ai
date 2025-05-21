@@ -106,7 +106,7 @@ def play_menu():
         model_path = os.path.join(MODELS_DIR, models[model_idx])
         
         max_frames = int(input("Max frames to play (default: 20000): ") or "20000")
-        skip_frames = int(input("Skip frames between actions (default: 2): ") or "2")
+        skip_frames = int(input("Skip frames between actions (default: 4): ") or "4")
         
         print(f"\nPlaying with model: {models[model_idx]}")
         print(f"Max Frames: {max_frames}")
