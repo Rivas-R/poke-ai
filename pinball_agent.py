@@ -89,7 +89,7 @@ class PinballAgent:
         self.epsilon = 1.0   # Initial exploration rate
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.9995
-        self.learning_rate = 0.01
+        self.learning_rate = 0.005
         
         # Create neural networks: main and target
         self.model = PinballDQN(state_size, action_size)
