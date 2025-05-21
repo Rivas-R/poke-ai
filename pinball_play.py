@@ -69,10 +69,10 @@ def play_pinball_with_model(model_path, render=True, max_frames=20000, skip_fram
             action = torch.argmax(action_values).item()
         
         # Apply the action
-        apply_action(pyboy, action)
         
         # Advance game for a few frames
         for _ in range(skip_frames):
+            apply_action(pyboy, action)
             pyboy.tick()
         
         # Track score

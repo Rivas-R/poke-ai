@@ -59,10 +59,10 @@ def train_pinball_agent(num_episodes=500, batch_size=64, max_frames_per_episode=
         for frame in range(max_frames_per_episode):
             # Select and execute action
             action = agent.act(state)
-            apply_action(pyboy, action)
             
             # Advance game multiple frames - increased skip frames for faster training
             for _ in range(skip_frames):
+                apply_action(pyboy, action)
                 pyboy.tick()
                 if pyboy.game_wrapper.game_over:
                     break
@@ -81,17 +81,17 @@ def train_pinball_agent(num_episodes=500, batch_size=64, max_frames_per_episode=
 
             current_balls = pyboy.game_wrapper.balls_left
             if current_balls < last_balls:
-                reward -= 10000  # Penalty for losing a ball
+                reward -= 1000  # Penalty for losing a ball
             elif current_balls > last_balls:
-                reward += 50000  # Reward for getting a ball
+                reward += 3000  # Reward for getting a ball
             
             current_s_balls = pyboy.game_wrapper.lost_ball_during_saver
             if current_s_balls > last_s_balls:
-                reward -= 10000   # Penalty for ball lost during saver
+                reward -= 5000   # Penalty for ball lost during saver
 
             current_pokemon_caught = pyboy.game_wrapper.pokemon_caught_in_session
             if current_pokemon_caught > last_pokemon_caught:
-                reward += 100000 # reward for catching a pokemon
+                reward += 1000000 # reward for catching a pokemon
             
             # Check if game is over
             done = pyboy.game_wrapper.game_over
