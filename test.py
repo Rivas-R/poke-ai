@@ -58,8 +58,8 @@ def play():
         pos_x = pyboy.memory[ADDR_BALL_X]
         pos_y = pyboy.memory[ADDR_BALL_Y]
 
-        print(f'pos_x: {pos_x}  pos_y:{pos_y}')
-        time.sleep(.4)
+        print(f'pos_x: {pos_x / 168.0}  pos_y:{pos_y / 168.0}')
+        #time.sleep(.4)
         
         iframes += 1
         #print(iframes % interval)
