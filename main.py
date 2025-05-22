@@ -66,7 +66,7 @@ def train_menu():
     
     try:
         episodes = int(input("Number of episodes (default: 1500): ") or "1500")
-        batch_size = int(input("Batch size (default: 128): ") or "128")
+        batch_size = int(input("Batch size (default: 64): ") or "64")
         max_frames = int(input("Max frames per episode (default: 100000): ") or "100000")
         skip_frames = int(input("Skip frames (default: 4): ") or "4")
         
