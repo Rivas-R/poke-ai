@@ -77,8 +77,8 @@ def train_pinball_agent(num_episodes=500, batch_size=64, max_frames_per_episode=
             current_score = pyboy.game_wrapper.score
             reward = current_score - last_score  # Reward based on score 
             
-            if abs(current_pos_x - last_pos_x) < 0.015 and abs(current_pos_y - last_pos_y) < 0.015:
-                stuck = min(stuck * 1.005, 2000)
+            if abs(current_pos_x - last_pos_x) < 5 and abs(current_pos_y - last_pos_y) < 5:
+                stuck = min(stuck * 1.03, current_score * .01)
                 reward -= stuck # Small penalty for doing nothing
             else:
                 stuck = stuck_initial
@@ -117,6 +117,9 @@ def train_pinball_agent(num_episodes=500, batch_size=64, max_frames_per_episode=
             last_s_balls = current_s_balls
             last_pokemon_caught = current_pokemon_caught
             
+
+            #print(f'stuck: {stuck}')
+            #print(f"{current_pos_x}, {current_pos_y}")
             # End episode if game is over
             if done:
                 break
@@ -132,7 +135,7 @@ def train_pinball_agent(num_episodes=500, batch_size=64, max_frames_per_episode=
         
         # Save model periodically - reduced frequency to save time
         if (episode + 1) % 100 == 0 or episode == num_episodes - 1:
-            model_path = os.path.join(MODELS_DIR, f"gen7_{episode+1}.pth")
+            model_path = os.path.join(MODELS_DIR, f"gen7_ep{episode+1}.pth")
             torch.save(agent.model.state_dict(), model_path)
             print(f"  Model saved: {model_path}")
             
