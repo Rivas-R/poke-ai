@@ -118,7 +118,7 @@ def train_pinball_agent(num_episodes=500, batch_size=64, max_frames_per_episode=
             last_pokemon_caught = current_pokemon_caught
             
 
-            print(f'stuck: {int(stuck)}  {stuck}')
+            #print(f'stuck: {int(stuck)}  {stuck}')
             #print(f"{current_pos_x}, {current_pos_y}")
             # End episode if game is over
             if done:
