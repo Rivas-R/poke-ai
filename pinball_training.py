@@ -157,7 +157,7 @@ def train_pinball_agent(num_episodes=500, batch_size=64, max_frames_per_episode=
         
         # Save model periodically - reduced frequency to save time
         if (episode + 1) % 100 == 0 or episode == num_episodes - 1:
-            model_path = os.path.join(MODELS_DIR, f"gen7_ep{episode+1}.pth")
+            model_path = os.path.join(MODELS_DIR, f"gen8_ep{episode+1}.pth")
             torch.save(agent.model.state_dict(), model_path)
             print(f"  Model saved: {model_path}")
             
