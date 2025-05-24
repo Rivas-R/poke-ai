@@ -78,8 +78,8 @@ def train_pinball_agent(num_episodes=500, batch_size=64, max_frames_per_episode=
             reward = current_score - last_score  # Reward based on score 
             
             if abs(current_pos_x - last_pos_x) < 0.015 and abs(current_pos_y - last_pos_y) < 0.015:
+                stuck = min(stuck * 1.005, 2000)
                 reward -= stuck # Small penalty for doing nothing
-                stuck *= 1.005
             else:
                 stuck = stuck_initial
 
