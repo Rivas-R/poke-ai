@@ -50,6 +50,7 @@ def train_pinball_agent(num_episodes=500, batch_size=64, max_frames_per_episode=
         last_balls = pyboy.game_wrapper.balls_left
         last_s_balls = pyboy.game_wrapper.lost_ball_during_saver
         last_pokemon_caught = pyboy.game_wrapper.pokemon_caught_in_session
+        stuck = stuck_initial = 10
         
         # Log this episode
         print(f"Episode {episode+1}/{num_episodes}, Epsilon: {agent.epsilon:.4f}")
@@ -76,22 +77,25 @@ def train_pinball_agent(num_episodes=500, batch_size=64, max_frames_per_episode=
             current_score = pyboy.game_wrapper.score
             reward = current_score - last_score  # Reward based on score 
             
-            if abs(current_pos_x - last_pos_x) < 0.01 and abs(current_pos_y - last_pos_y) < 0.01:
-                reward -= 50 # Small penalty for doing nothing
+            if abs(current_pos_x - last_pos_x) < 0.015 and abs(current_pos_y - last_pos_y) < 0.015:
+                reward -= stuck # Small penalty for doing nothing
+                stuck *= 1.005
+            else:
+                stuck = stuck_initial
 
             current_balls = pyboy.game_wrapper.balls_left
             if current_balls < last_balls:
-                reward -= 50000  # Penalty for losing a ball
+                reward -= min(current_score * 0.1, 5000)  # Penalty for losing a ball
             elif current_balls > last_balls:
-                reward += 100000  # Reward for getting a ball
+                reward += max(current_score * 0.1, 10000)  # Reward for getting a ball
             
             current_s_balls = pyboy.game_wrapper.lost_ball_during_saver
             if current_s_balls > last_s_balls:
-                reward -= 50000   # Penalty for ball lost during saver
+                reward -= min(current_score * 0.1, 5000)   # Penalty for ball lost during saver
 
             current_pokemon_caught = pyboy.game_wrapper.pokemon_caught_in_session
             if current_pokemon_caught > last_pokemon_caught:
-                reward += 10000000 # reward for catching a pokemon
+                reward += max(current_score * 0.3, 50000) # reward for catching a pokemon
             
             # Check if game is over
             done = pyboy.game_wrapper.game_over
@@ -122,7 +126,7 @@ def train_pinball_agent(num_episodes=500, batch_size=64, max_frames_per_episode=
         scores.append(total_reward)
         frame_counts.append(frame)
         
-        print(f"  Score: {pyboy.game_wrapper.score}")
+        print(f"  Score: {pyboy.game_wrapper.score:,}")
         print(f"  Duration: {duration:.2f} seconds, Frames: {frame}")
         print(f"  Total reward: {total_reward:.2f}")
         

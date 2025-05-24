@@ -46,6 +46,7 @@ def preprocess_state(pyboy: PyBoy, current_pos_x, current_pos_y, last_pos_x, las
         last_pos_y / 168.0,             # Normalize last Y position
         pyboy.game_wrapper.balls_left / 5.0         # Normalize remaining lives
     ]
+    #print(f'last_pos: {base_state[2]}, {base_state[3]}    current_pos: {base_state[0]}, {base_state[1]}')
     
     # Get screen image
     pil_image = pyboy.screen.image

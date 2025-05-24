@@ -10,7 +10,7 @@ from pinball_common import MODELS_DIR, STATE_SIZE, IMAGE_SIZE, BASE_STATE_SIZE, 
 
 # Then import the other modules
 from pinball_training import train_pinball_agent
-from pinball_play import play_pinball_with_model
+from pinball_play import play_pinball_with_model, test_model
 
 def list_available_models():
     """
@@ -42,15 +42,18 @@ def main_menu():
         print("="*50)
         print("1. Train new model")
         print("2. Play with trained model")
-        print("3. Exit")
+        print("3. Test model")
+        print("4. Exit")
         
-        choice = input("\nEnter your choice (1-3): ")
+        choice = input("\nEnter your choice (1-4): ")
         
         if choice == '1':
             train_menu()
         elif choice == '2':
             play_menu()
         elif choice == '3':
+            test_menu()
+        elif choice == '4':
             print("Goodbye!")
             sys.exit(0)
         else:
@@ -117,6 +120,44 @@ def play_menu():
             model_path=model_path,
             max_frames=max_frames,
             skip_frames=skip_frames
+        )
+    
+    except ValueError:
+        print("Invalid input. Please enter numeric values.")
+
+def test_menu():
+    """
+    Menu for playing with a trained model
+    """
+    models = list_available_models()
+    
+    if not models:
+        return
+    
+    try:
+        model_idx = int(input("\nSelect model number to test: ")) - 1
+        
+        if model_idx < 0 or model_idx >= len(models):
+            print("Invalid model number.")
+            return
+        
+        model_path = os.path.join(MODELS_DIR, models[model_idx])
+        
+        max_frames = int(input("Max frames to play (default: 20000): ") or "20000")
+        skip_frames = int(input("Skip frames between actions (default: 4): ") or "4")
+        epsisodes = int(input("Test episodes (default: 25): ") or "25")
+        
+        print(f"\nTesting model: {models[model_idx]}")
+        print(f"Max Frames: {max_frames}")
+        print(f"Skip Frames: {skip_frames}")
+        print(f"Epsisodes: {epsisodes}")
+        
+        # Start playing
+        test_model(
+            model_path=model_path,
+            max_frames=max_frames,
+            skip_frames=skip_frames,
+            episodes=epsisodes
         )
     
     except ValueError:

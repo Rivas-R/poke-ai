@@ -18,65 +18,56 @@ class PinballDQN(nn.Module):
         self.base_features = 5  # Number of numeric state features
         self.image_features = input_size - self.base_features  # Screen pixels
         
-        # Process image features with optimized convolutional layers if input includes image
-        if self.image_features > 0:
-            # Assuming 40x36 binary image (downsampled from 160x144)
-            self.screen_width = 40
-            self.screen_height = 36
-            
-            # Smaller kernels and fewer filters for faster processing
-            self.conv1 = nn.Conv2d(1, 8, kernel_size=3, stride=2)
-            self.conv2 = nn.Conv2d(8, 16, kernel_size=3, stride=1)
-            
-            # Calculate the size after convolutions
-            def conv_output_size(size, kernel_size, stride):
-                return (size - kernel_size) // stride + 1
-            
-            conv1_width = conv_output_size(self.screen_width, 3, 2)
-            conv1_height = conv_output_size(self.screen_height, 3, 2)
-            
-            conv2_width = conv_output_size(conv1_width, 3, 1)
-            conv2_height = conv_output_size(conv1_height, 3, 1)
-            
-            self.conv_output_size = conv2_width * conv2_height * 16
-            
-            # FC layer for processing base features
-            self.base_fc = nn.Linear(self.base_features, 16)
-            
-            # Combine conv features with base features - smaller layers
-            self.fc1 = nn.Linear(self.conv_output_size + 16, 64)
-            self.fc2 = nn.Linear(64, output_size)
-        else:
-            # If no image features, use simple fully connected architecture
-            self.fc1 = nn.Linear(input_size, 32)
-            self.fc2 = nn.Linear(32, output_size)
+        # Process image features with optimized convolutional layers assuming 40x36 binary image (downsampled from 160x144)
+        self.screen_width = 40
+        self.screen_height = 36
+        
+        # Smaller kernels and fewer filters for faster processing
+        self.conv1 = nn.Conv2d(1, 8, kernel_size=3, stride=2)
+        self.conv2 = nn.Conv2d(8, 16, kernel_size=3, stride=1)
+        
+        # Calculate the size after convolutions
+        def conv_output_size(size, kernel_size, stride):
+            return (size - kernel_size) // stride + 1
+        
+        conv1_width = conv_output_size(self.screen_width, 3, 2)
+        conv1_height = conv_output_size(self.screen_height, 3, 2)
+        
+        conv2_width = conv_output_size(conv1_width, 3, 1)
+        conv2_height = conv_output_size(conv1_height, 3, 1)
+        
+        self.conv_output_size = conv2_width * conv2_height * 16
+        
+        # FC layer for processing base features
+        self.base_fc = nn.Linear(self.base_features, 16)
+        
+        # Combine conv features with base features - smaller layers
+        self.fc1 = nn.Linear(self.conv_output_size + 16, 64)
+        self.fc2 = nn.Linear(64, output_size)
+
         
     def forward(self, x):
-        if hasattr(self, 'conv1'):
-            # Split input into base features and image
-            base_x = x[:, :self.base_features]
-            image_x = x[:, self.base_features:]
-            
-            # Process base features
-            base_features = F.relu(self.base_fc(base_x))
-            
-            # Reshape and process image features
-            batch_size = x.size(0)
-            image_x = image_x.view(batch_size, 1, self.screen_height, self.screen_width)
-            image_features = F.relu(self.conv1(image_x))
-            image_features = F.relu(self.conv2(image_features))
-            image_features = image_features.view(batch_size, -1)
-            
-            # Combine features
-            combined = torch.cat((base_features, image_features), dim=1)
-            
-            # Simplified fully connected path
-            x = F.relu(self.fc1(combined))
-            return self.fc2(x)
-        else:
-            # Simple fully connected path
-            x = F.relu(self.fc1(x))
-            return self.fc2(x)
+        # Split input into base features and image
+        base_x = x[:, :self.base_features]
+        image_x = x[:, self.base_features:]
+        
+        # Process base features
+        base_features = F.relu(self.base_fc(base_x))
+        
+        # Reshape and process image features
+        batch_size = x.size(0)
+        image_x = image_x.view(batch_size, 1, self.screen_height, self.screen_width)
+        image_features = F.relu(self.conv1(image_x))
+        image_features = F.relu(self.conv2(image_features))
+        image_features = image_features.view(batch_size, -1)
+        
+        # Combine features
+        combined = torch.cat((base_features, image_features), dim=1)
+        
+        # Simplified fully connected path
+        x = F.relu(self.fc1(combined))
+        return self.fc2(x)
+
 
 # Reinforcement learning agent class
 class PinballAgent:
