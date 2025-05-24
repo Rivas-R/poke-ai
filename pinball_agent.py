@@ -79,8 +79,8 @@ class PinballAgent:
         self.gamma = 0.99    # Discount factor
         self.epsilon = 1.0   # Initial exploration rate
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.9999
-        self.learning_rate = 0.001
+        self.epsilon_decay = 0.995
+        self.learning_rate = 0.0005
         
         # Create neural networks: main and target
         self.model = PinballDQN(state_size, action_size)
@@ -91,7 +91,7 @@ class PinballAgent:
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate)
         
         # Experience memory - slightly reduced size for memory efficiency
-        self.memory = deque(maxlen=5000)
+        self.memory = deque(maxlen=20000)
         
         # Counter for updating target network
         self.update_counter = 0
@@ -159,7 +159,7 @@ class PinballAgent:
         
         # Periodically update target network
         self.update_counter += 1
-        if self.update_counter % 100 == 0:
+        if self.update_counter % 50 == 0:
             self.update_target_model()
         
         return loss.item()

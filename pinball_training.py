@@ -50,7 +50,7 @@ def train_pinball_agent(num_episodes=500, batch_size=64, max_frames_per_episode=
         last_balls = pyboy.game_wrapper.balls_left
         last_s_balls = pyboy.game_wrapper.lost_ball_during_saver
         last_pokemon_caught = pyboy.game_wrapper.pokemon_caught_in_session
-        stuck = stuck_initial = 1
+        stuck_counter = 0
         
         # Log this episode
         print(f"Episode {episode+1}/{num_episodes}, Epsilon: {agent.epsilon:.4f}")
@@ -73,29 +73,51 @@ def train_pinball_agent(num_episodes=500, batch_size=64, max_frames_per_episode=
             current_pos_y = pyboy.memory[ADDR_BALL_Y]
             next_state = preprocess_state(pyboy, current_pos_x, current_pos_y, last_pos_x, last_pos_y)
             
-            # Calculate reward
+            reward = 0
+    
+            # 1. Score-based reward (normalized)
             current_score = pyboy.game_wrapper.score
-            reward = current_score - last_score  # Reward based on score 
+            score_gain = current_score - last_score
+            reward += score_gain * 0.01  # Scale down score rewards
             
-            if abs(current_pos_x - last_pos_x) < 5 and abs(current_pos_y - last_pos_y) < 5:
-                stuck = min(stuck * 1.01, 100)
-                reward -= int(stuck) # Small penalty for doing nothing
-            else:
-                stuck = stuck_initial
-
+            # 2. Ball management (moderate penalties/rewards)
             current_balls = pyboy.game_wrapper.balls_left
             if current_balls < last_balls:
-                reward -= 50000  # Penalty for losing a ball
+                reward -= 500  # Significant but not overwhelming penalty
             elif current_balls > last_balls:
-                reward += 100000  # Reward for getting a ball
+                reward += 1000  # Good reward for extra ball
             
+            # 3. Saver ball management
             current_s_balls = pyboy.game_wrapper.lost_ball_during_saver
             if current_s_balls > last_s_balls:
-                reward -= 50000   # Penalty for ball lost during saver
-
+                reward -= 300  # Moderate penalty
+            
+            # 4. Pokemon catching (scaled down but still significant)
             current_pokemon_caught = pyboy.game_wrapper.pokemon_caught_in_session
             if current_pokemon_caught > last_pokemon_caught:
-                reward += 10000000 # reward for catching a pokemon
+                reward += 5000  # Large reward but not game-breaking
+            
+            # 5. Movement/activity reward (encourage active play)
+            movement = abs(current_pos_x - last_pos_x) + abs(current_pos_y - last_pos_y)
+            if movement > 10:  # Ball is moving significantly
+                reward += 1  # Small positive reinforcement for active play
+            
+            # 6. Improved stuck penalty (more responsive)
+            if abs(current_pos_x - last_pos_x) < 3 and abs(current_pos_y - last_pos_y) < 3:
+                stuck_penalty = min(stuck_counter * 2, 50)  # Grows faster, caps at reasonable level
+                reward -= stuck_penalty
+                stuck_counter = min(stuck_counter + 1, 25)
+            else:
+                stuck_counter = max(stuck_counter - 1, 0)  # Decay stuck counter when moving
+            
+            # 7. Flipper timing reward (if you can detect good flipper hits)
+            # This would require additional game state analysis
+            # if good_flipper_timing:
+            #     reward += 5
+            
+            # 8. Keep ball alive reward (small continuous reward)
+            if not pyboy.game_wrapper.game_over:
+                reward += 0.1  # Small reward for each frame ball stays alive
             
             # Check if game is over
             done = pyboy.game_wrapper.game_over
