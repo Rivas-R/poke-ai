@@ -1,6 +1,7 @@
 """
 Pokemon Pinball - Play using trained model (Optimized)
 """
+import random
 from pyboy import PyBoy
 import torch
 import time
@@ -140,9 +141,12 @@ def test_model(model_path, max_frames=20000, skip_frames=4, episodes=25):
     last_pos_x = current_pos_x = pyboy.memory[ADDR_BALL_X]
     last_pos_y = current_pos_y = pyboy.memory[ADDR_BALL_Y]
     
-    for _ in range(episodes):
+    for i in range(episodes):
         init_game(pyboy)
 
+        for _ in range(random.randint(0, 512)):
+            pyboy.tick()
+        stuck = 0
         for frame in range(max_frames):
             # Get the current state
             current_pos_x = pyboy.memory[ADDR_BALL_X]
@@ -165,23 +169,35 @@ def test_model(model_path, max_frames=20000, skip_frames=4, episodes=25):
             # Track score
             score = game_wrapper.score
 
+            if current_pos_x == last_pos_x and current_pos_y == last_pos_y:
+                stuck +=1
+            else:
+                stuck = 0
+
+            if stuck > 350:
+                for _ in range(30):
+                    pyboy.tick()
+                for _ in range(30):
+                    pyboy.button('a')
+                    pyboy.tick()
+    
             last_pos_x = current_pos_x
             last_pos_y = current_pos_y
 
+
             if pyboy.game_wrapper.game_over:
-                print("GAME OVER?????????????")
                 break
 
         scores.append(score)
         # Show final results
         duration = time.time() - start_time
-        print(f"\nGame Over!")
-        print(f"Final Score: {game_wrapper.score}")
+        print(f"\nGame {i} Over!")
+        print(f"Final Score: {game_wrapper.score:,}")
         print(f"Duration: {duration:.2f} seconds, Frames: {frame}")
     
     print("\Test completed!")
-    print(f"Average score: {sum(scores) / len(scores) }")
-    print(f"Max score: {max(scores)}    Min score: {min(scores)}")
+    print(f"Average score: {(sum(scores) / len(scores)):,}")
+    print(f"Max score: {max(scores):,}    Min score: {min(scores):,}")
 
     # Close PyBoy
     pyboy.stop()

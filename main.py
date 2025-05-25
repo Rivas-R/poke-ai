@@ -36,28 +36,27 @@ def main_menu():
     """
     Display main menu and handle user input
     """
-    while True:
-        print("\n" + "="*50)
-        print("POKEMON PINBALL AI - MAIN MENU (OPTIMIZED)")
-        print("="*50)
-        print("1. Train new model")
-        print("2. Play with trained model")
-        print("3. Test model")
-        print("4. Exit")
-        
-        choice = input("\nEnter your choice (1-4): ")
-        
-        if choice == '1':
-            train_menu()
-        elif choice == '2':
-            play_menu()
-        elif choice == '3':
-            test_menu()
-        elif choice == '4':
-            print("Goodbye!")
-            sys.exit(0)
-        else:
-            print("Invalid choice. Please try again.")
+    print("\n" + "="*50)
+    print("POKEMON PINBALL AI - MAIN MENU (OPTIMIZED)")
+    print("="*50)
+    print("1. Train new model")
+    print("2. Play with trained model")
+    print("3. Test model")
+    print("4. Exit")
+    
+    choice = input("\nEnter your choice (1-4): ")
+    
+    if choice == '1':
+        train_menu()
+    elif choice == '2':
+        play_menu()
+    elif choice == '3':
+        test_menu()
+    elif choice == '4':
+        print("Goodbye!")
+        sys.exit(0)
+    else:
+        print("Invalid choice. Please try again.")
 
 def train_menu():
     """
