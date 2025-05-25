@@ -144,7 +144,7 @@ def test_menu():
         
         max_frames = int(input("Max frames to play (default: 20000): ") or "20000")
         skip_frames = int(input("Skip frames between actions (default: 4): ") or "4")
-        epsisodes = int(input("Test episodes (default: 25): ") or "25")
+        epsisodes = int(input("Test episodes (default: 100): ") or "100")
         
         print(f"\nTesting model: {models[model_idx]}")
         print(f"Max Frames: {max_frames}")
