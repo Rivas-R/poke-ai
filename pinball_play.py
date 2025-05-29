@@ -56,6 +56,8 @@ def play_pinball_with_model(model_path, render=True, max_frames=20000, skip_fram
 
     last_pos_x = current_pos_x = pyboy.memory[ADDR_BALL_X]
     last_pos_y = current_pos_y = pyboy.memory[ADDR_BALL_Y]
+
+    stuck = 0
     
     while frame < max_frames:
         # Get the current state
@@ -75,7 +77,19 @@ def play_pinball_with_model(model_path, render=True, max_frames=20000, skip_fram
         for _ in range(skip_frames):
             apply_action(pyboy, action)
             pyboy.tick()
-        
+
+        if current_pos_x == last_pos_x and current_pos_y == last_pos_y:
+            stuck +=1
+        else:
+            stuck = 0
+
+        if stuck > 200:
+            for _ in range(30):
+                pyboy.tick()
+            for _ in range(30):
+                pyboy.button('a')
+                pyboy.tick()
+    
         # Track score
         current_score = game_wrapper.score
         
