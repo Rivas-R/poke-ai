@@ -110,11 +110,6 @@ def train_pinball_agent(num_episodes=500, batch_size=64, max_frames_per_episode=
             else:
                 stuck_counter = max(stuck_counter - 1, 0)  # Decay stuck counter when moving
             
-            # 7. Flipper timing reward (if you can detect good flipper hits)
-            # This would require additional game state analysis
-            # if good_flipper_timing:
-            #     reward += 5
-            
             # 8. Keep ball alive reward (small continuous reward)
             if not pyboy.game_wrapper.game_over:
                 reward += 0.1  # Small reward for each frame ball stays alive

@@ -43,7 +43,7 @@ def play():
     lives = game_wrapper.balls_left
 
     iframes = 0
-    interval = 100
+    interval = 50
 
     with open("rom/Pokemon Pinball Start State.gbc.state", "rb") as f:
         pyboy.load_state(f)
@@ -55,7 +55,11 @@ def play():
 
     while pyboy.tick():
         if iframes % interval == 0:
-            #screenshot(pyboy, f'screenshots/screenshot_{iframes//interval}.png')
+            screenshot(pyboy, f'screenshots/screenshot_small_{iframes//interval}.png')
+            pil_image = pyboy.screen.image
+            pil_image.save(f'screenshots/screenshot_full_{iframes//interval}.png')
+
+            print("AAAAAAAA")
             pass
 
         #print(pyboy.game_wrapper.pokemon_caught_in_session)
@@ -66,14 +70,14 @@ def play():
         #print(f'pos_x: {pos_x / 168.0}  pos_y:{pos_y / 168.0}')
         #print(pyboy.game_wrapper.balls_left)
 
-        if abs(current_pos_x - last_pos_x) < 0.015 and abs(current_pos_y - last_pos_y) < 0.015:
+        """if abs(current_pos_x - last_pos_x) < 0.015 and abs(current_pos_y - last_pos_y) < 0.015:
                 #reward -= stuck # Small penalty for doing nothing
                 stuck *= 1.005
         else:
             stuck = stuck_initial
         
         print(stuck)
-    
+        """
         last_pos_x = current_pos_x
         last_pos_y = current_pos_y
         #time.sleep(.4)
